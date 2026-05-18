@@ -145,7 +145,7 @@ function scatter(seed) {
   pieces.forEach(p => {
     p.x = MARGIN + r() * Math.max(1, AW - p.w - MARGIN * 2);
     p.y = MARGIN + r() * Math.max(1, AH - p.h - MARGIN * 2);
-    p.rot = (r() - 0.5) * 0.5;
+    p.rot = 0;
   });
 }
 
