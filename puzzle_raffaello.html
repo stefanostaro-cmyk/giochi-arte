@@ -23,7 +23,7 @@ canvas:active { cursor: grabbing; }
 <div id="toolbar">
   <strong style="font-size:13px;color:#333;">✂ Puzzle Raffaello</strong>
   <button id="btn-shuffle">↺ Rimescola</button>
-  <button id="btn-solve">↩ Soluzione</button>
+  
   <button id="btn-more">＋ Pezzi</button>
   <button id="btn-less">－ Pezzi</button>
   <label>Layout:
@@ -227,7 +227,7 @@ document.getElementById('btn-more').addEventListener('click', () => {
   numP += 4; computeSlots(); buildPieces(numP, 42); scatter(77); draw();
 });
 document.getElementById('btn-less').addEventListener('click', () => {
-  if (numP <= 4) return;
+  if (numP <= 8) return;
   numP -= 4; computeSlots(); buildPieces(numP, 42); scatter(77); draw();
 });
 document.getElementById('sel-layout').addEventListener('change', e => {
