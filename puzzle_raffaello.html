@@ -44,16 +44,16 @@ const IMG2 = "data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJ
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 
-let AW, AH, MARGIN = 16;
+let AW, AH;
+const MARGIN = 16;
+const GAP = 0; // gap tra pezzi nella soluzione
 let layout = 'v';
 let numP = 12;
 let pieces = [];
 let dragging = null, dx = 0, dy = 0;
 let imgs = [];
 let displayScale = 1;
-
-// Scala di rendering: ogni immagine viene disegnata a questa dimensione nel foglio
-let imgSlots = []; // {x, y, w, h} — posizione e dimensione di ciascuna immagine nel foglio
+let imgSlots = [];
 
 function seededRng(s) {
   let x = (s | 0) || 1;
@@ -68,12 +68,13 @@ function computeSlots() {
     const slotH = (AH - MARGIN * 3) / 2;
     imgs.forEach((img, ii) => {
       const sc = Math.min(slotW / img.naturalWidth, slotH / img.naturalHeight);
-      const iw = img.naturalWidth * sc, ih = img.naturalHeight * sc;
+      const iw = Math.floor(img.naturalWidth * sc);
+      const ih = Math.floor(img.naturalHeight * sc);
       imgSlots.push({
-        x: MARGIN + (slotW - iw) / 2,
-        y: MARGIN + ii * (slotH + MARGIN) + (slotH - ih) / 2,
-        w: iw, h: ih,
-        sc, srcW: img.naturalWidth, srcH: img.naturalHeight
+        x: MARGIN + Math.floor((slotW - iw) / 2),
+        y: MARGIN + ii * (slotH + MARGIN) + Math.floor((slotH - ih) / 2),
+        w: iw, h: ih, sc,
+        srcW: img.naturalWidth, srcH: img.naturalHeight
       });
     });
   } else {
@@ -82,12 +83,13 @@ function computeSlots() {
     const slotH = AH - MARGIN * 2;
     imgs.forEach((img, ii) => {
       const sc = Math.min(slotW / img.naturalWidth, slotH / img.naturalHeight);
-      const iw = img.naturalWidth * sc, ih = img.naturalHeight * sc;
+      const iw = Math.floor(img.naturalWidth * sc);
+      const ih = Math.floor(img.naturalHeight * sc);
       imgSlots.push({
-        x: MARGIN + ii * (slotW + MARGIN) + (slotW - iw) / 2,
-        y: MARGIN + (slotH - ih) / 2,
-        w: iw, h: ih,
-        sc, srcW: img.naturalWidth, srcH: img.naturalHeight
+        x: MARGIN + ii * (Math.floor(slotW) + MARGIN) + Math.floor((slotW - iw) / 2),
+        y: MARGIN + Math.floor((slotH - ih) / 2),
+        w: iw, h: ih, sc,
+        srcW: img.naturalWidth, srcH: img.naturalHeight
       });
     });
   }
@@ -100,86 +102,38 @@ function computeSlots() {
 
 function buildPieces(n, seed) {
   pieces = [];
-  const r = seededRng(seed);
   const cols = Math.ceil(Math.sqrt(n));
   const rows = Math.ceil(n / cols);
 
   imgs.forEach((img, ii) => {
     const slot = imgSlots[ii];
-    // Dimensione di ogni cella in coordinate SORGENTE (pixel dell'immagine)
-    const cellSrcW = slot.srcW / cols;
-    const cellSrcH = slot.srcH / rows;
+    // Dimensione di ogni pezzo in pixel destinazione
+    const pieceW = Math.floor((slot.w - GAP * (cols - 1)) / cols);
+    const pieceH = Math.floor((slot.h - GAP * (rows - 1)) / rows);
 
     let cnt = 0;
     for (let ro = 0; ro < rows && cnt < n; ro++) {
       for (let co = 0; co < cols && cnt < n; co++, cnt++) {
-        // Centro della cella in coordinate sorgente
-        const cxSrc = (co + 0.5) * cellSrcW;
-        const cySrc = (ro + 0.5) * cellSrcH;
+        // Posizione del pezzo nella soluzione (coordinate foglio)
+        const solvedX = slot.x + co * (pieceW + GAP);
+        const solvedY = slot.y + ro * (pieceH + GAP);
 
-        // Genera poligono in coordinate sorgente
-        const sides = 5 + Math.floor(r() * 3);
-        const rxSrc = cellSrcW * 0.53;
-        const rySrc = cellSrcH * 0.53;
-        const srcPts = [];
-        for (let i = 0; i < sides; i++) {
-          const angle = (i / sides) * Math.PI * 2 - Math.PI / 2 + (r() - 0.5) * 0.5;
-          const f = 0.55 + r() * 0.88;
-          srcPts.push([cxSrc + Math.cos(angle) * rxSrc * f, cySrc + Math.sin(angle) * rySrc * f]);
-        }
+        // Porzione sorgente corrispondente
+        const srcX = Math.floor(co * slot.srcW / cols);
+        const srcY = Math.floor(ro * slot.srcH / rows);
+        const srcW = Math.floor(slot.srcW / cols);
+        const srcH = Math.floor(slot.srcH / rows);
 
-        // Bounding box in coord sorgente
-        let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
-        srcPts.forEach(([x,y])=>{bx0=Math.min(bx0,x);by0=Math.min(by0,y);bx1=Math.max(bx1,x);by1=Math.max(by1,y);});
-        const bSrcW = bx1 - bx0, bSrcH = by1 - by0;
-
-        // Crea offscreen canvas nelle dimensioni DESTINAZIONE (già scalate)
-        const dstW = Math.ceil(bSrcW * slot.sc) + 6;
-        const dstH = Math.ceil(bSrcH * slot.sc) + 6;
-        const pad = 3;
+        // Crea offscreen canvas del pezzo
         const oc = document.createElement('canvas');
-        oc.width = dstW; oc.height = dstH;
+        oc.width = pieceW;
+        oc.height = pieceH;
         const oc2 = oc.getContext('2d');
+        oc2.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, pieceW, pieceH);
 
-        // Punti del poligono in coordinate DESTINAZIONE (relative all'offscreen)
-        const dstPts = srcPts.map(([x, y]) => [
-          (x - bx0) * slot.sc + pad,
-          (y - by0) * slot.sc + pad
-        ]);
 
-        oc2.save();
-        oc2.beginPath();
-        oc2.moveTo(dstPts[0][0], dstPts[0][1]);
-        dstPts.forEach(([x,y]) => oc2.lineTo(x, y));
-        oc2.closePath();
-        oc2.clip();
-        // Disegna l'intera immagine scalata, traslata in modo che la porzione giusta finisca nell'offscreen
-        oc2.drawImage(img,
-          -bx0 * slot.sc + pad,
-          -by0 * slot.sc + pad,
-          slot.srcW * slot.sc,
-          slot.srcH * slot.sc
-        );
-        oc2.restore();
 
-        // Bordo bianco semitrasparente
-        oc2.strokeStyle = 'rgba(255,255,255,0.6)';
-        oc2.lineWidth = 1.5;
-        oc2.beginPath();
-        oc2.moveTo(dstPts[0][0], dstPts[0][1]);
-        dstPts.forEach(([x,y]) => oc2.lineTo(x,y));
-        oc2.closePath();
-        oc2.stroke();
-
-        // Posizione di destinazione CORRETTA nel foglio quando risolto
-        const solvedX = slot.x + bx0 * slot.sc - pad;
-        const solvedY = slot.y + by0 * slot.sc - pad;
-
-        pieces.push({
-          oc, w: dstW, h: dstH,
-          solvedX, solvedY,
-          imgIdx: ii
-        });
+        pieces.push({ oc, w: pieceW, h: pieceH, solvedX, solvedY, imgIdx: ii, rot: 0 });
       }
     }
   });
@@ -191,7 +145,7 @@ function scatter(seed) {
   pieces.forEach(p => {
     p.x = MARGIN + r() * Math.max(1, AW - p.w - MARGIN * 2);
     p.y = MARGIN + r() * Math.max(1, AH - p.h - MARGIN * 2);
-    p.rot = (r() - 0.5) * 0.45;
+    p.rot = (r() - 0.5) * 0.5;
   });
 }
 
@@ -209,9 +163,13 @@ function draw() {
   ctx.fillRect(0, 0, AW, AH);
   pieces.forEach(p => {
     ctx.save();
-    const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
-    ctx.translate(cx, cy); ctx.rotate(p.rot || 0); ctx.translate(-cx, -cy);
-    ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
+    if (p.rot) {
+      const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
+      ctx.translate(cx, cy); ctx.rotate(p.rot); ctx.translate(-cx, -cy);
+    }
+    ctx.shadowColor = 'rgba(0,0,0,0.18)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetY = 2;
     ctx.drawImage(p.oc, p.x, p.y);
     ctx.restore();
   });
@@ -265,7 +223,7 @@ document.getElementById('btn-solve').addEventListener('click', () => {
   solve(); draw();
 });
 document.getElementById('btn-more').addEventListener('click', () => {
-  if (numP >= 32) return;
+  if (numP >= 36) return;
   numP += 4; computeSlots(); buildPieces(numP, 42); scatter(77); draw();
 });
 document.getElementById('btn-less').addEventListener('click', () => {
@@ -276,7 +234,6 @@ document.getElementById('sel-layout').addEventListener('change', e => {
   layout = e.target.value; computeSlots(); buildPieces(numP, 42); scatter(99); draw();
 });
 
-// Init
 const i1 = new Image(), i2 = new Image();
 let loaded = 0;
 function tryBuild() {
