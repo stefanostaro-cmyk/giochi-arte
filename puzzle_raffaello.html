@@ -219,9 +219,6 @@ canvas.addEventListener('touchend', () => dragging = null);
 document.getElementById('btn-shuffle').addEventListener('click', () => {
   scatter(Date.now() % 99999); draw();
 });
-document.getElementById('btn-solve').addEventListener('click', () => {
-  solve(); draw();
-});
 document.getElementById('btn-more').addEventListener('click', () => {
   if (numP >= 36) return;
   numP += 4; computeSlots(); buildPieces(numP, 42); scatter(77); draw();
