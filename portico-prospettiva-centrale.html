@@ -86,7 +86,7 @@ ol li.cur{background:var(--fill-top);color:var(--ink);font-weight:500}
     <div class="sub">Metodo dei punti di distanza · Disegno tecnico</div>
   </header>
 
-  <div class="board" id="board"><svg id="svg" viewBox="-13.6 -11.9 44 13.8" role="img" aria-label="Costruzione del portico in prospettiva centrale"></svg></div>
+  <div class="board" id="board"><svg id="svg" viewBox="-13 -12.4 42.6 13.9" role="img" aria-label="Costruzione del portico in prospettiva centrale"></svg></div>
 
   <div class="controls">
     <button id="prev" type="button" aria-label="Passaggio precedente">◀ Indietro</button>
@@ -115,18 +115,20 @@ ol li.cur{background:var(--fill-top);color:var(--ink);font-weight:500}
 
 <script>
 (()=>{
-const XPP=22,H=10,D=24,XPD=XPP-D;
-const X0=0,X1=1,X2=5,X3=6,T=1,ZS=3.5,ZTOP=6.5,RF=2,RL=RF,PIER=1,K=Math.SQRT1_2;
-const CENTERS=[0,1,2,3].map(i=>T+RL+i*(2*RL+PIER));
-const PEND=CENTERS[3]+RL+PIER;
-const DEPTHS=[T];CENTERS.forEach(c=>DEPTHS.push(c-RL,c+RL));DEPTHS.push(PEND);DEPTHS.splice(0,DEPTHS.length,...[...new Set(DEPTHS)].sort((a,b)=>a-b));
-const P=(x,p,z)=>{const f=D/(D+p);return[XPP+(x-XPP)*f,-(H+(z-H)*f)]};
+const XPP=16.5,H=10.5,D=18,XPD=XPP-D;
+// modello FIG. 8: pilastri 1, luce 5 (raggio 2,5), arcata frontale arretrata di S0 dal quadro, tre campate laterali uguali
+const X0=0,X1=1,X2=6,X3=7,S0=1,T=1,ZS=5,ZTOP=8.8,RF=2.5,RL=RF,PIER=1,K=Math.SQRT1_2;
+const CENTERS=[0,1,2].map(i=>T+RL+i*(2*RL+PIER));
+const PEND=CENTERS[2]+RL+PIER;
+const DEPTHS=[...new Set([0,T,...CENTERS.flatMap(c=>[c-RL,c+RL]),PEND])].sort((a,b)=>a-b);
+const LTX=p=>X3+S0+p;
+const P=(x,p,z)=>{const f=D/(D+p+S0);return[XPP+(x-XPP)*f,-(H+(z-H)*f)]};
 const M=(x,z)=>[x,-z];
 const PP=M(XPP,H),PD=M(XPD,H);
 const NS="http://www.w3.org/2000/svg";
 const arcPts=(fn,n=24)=>Array.from({length:n+1},(_,i)=>fn(Math.PI*i/n));
 // linee viste e nascoste: ray casting dal punto verso l'osservatore attraverso il solido
-const cxF=(X1+X2)/2,EPS=1e-4,VIEW=[XPP,-D,H];
+const cxF=(X1+X2)/2,EPS=1e-4,VIEW=[XPP,-D-S0,H];
 function solid(x,p,z){
   if(z<=EPS||z>=ZTOP-EPS)return false;
   if(x>EPS&&x<X3-EPS&&p>EPS&&p<T-EPS){
@@ -159,60 +161,63 @@ const FILL=(pts,c)=>cur.els.push({k:"fill",d:"M"+pts.map(q=>q.join(",")).join("L
 
 // 1
 step("Quadro, orizzonte e punti di fuga","Traccia la linea di terra LT e la linea d'orizzonte LO. Su LO fissa il punto principale PP, dove fuggono tutte le rette perpendicolari al quadro, e il punto di distanza PD, posto a sinistra di PP a una distanza d uguale alla distanza dell'osservatore dal quadro. Verso PD fuggono le rette orizzontali inclinate di 45°.");
-L(M(-13,0),M(29.8,0),"ref");L(M(-13,H),M(29.8,H),"ref");
-TX("LT",M(29.8,.3),"lbl big","end");TX("LO",M(29.8,H+.3),"lbl big","end");
+L(M(-12.8,0),M(29.4,0),"ref");L(M(-12.8,H),M(29.4,H),"ref");
+TX("LT",M(29.4,.3),"lbl big","end");TX("LO",M(29.4,H+.3),"lbl big","end");
 DOT(PP,"dot ref",.16);DOT(PD,"dot ref",.16);TX("PP",M(XPP,H+.45),"lbl big");TX("PD",M(XPD,H+.45),"lbl big");
 L(M(XPD,H+1.1),M(XPP,H+1.1),"ch");L(M(XPD,H+.85),M(XPD,H+1.35),"ch");L(M(XPP,H+.85),M(XPP,H+1.35),"ch");
 TX("d",M((XPD+XPP)/2,H+1.25),"lbl");
 
 // 2
-step("Arcata frontale in vera forma","L'arcata frontale appoggia sul quadro, quindi non subisce deformazioni prospettiche: si disegna in vera forma e vera grandezza. Segna sulla LT i punti 1, 2, 3, 4 dei piedritti, inscrivi la metà superiore dell'arco in un rettangolo e traccia l'arco con il compasso dal centro sull'imposta.");
+step("Punti 1–4 e rette di profondità","Dalla pianta (FIG. 8) prolunga i lati del portico fino al quadro: ottieni sulla LT i punti 1, 2, 3, 4. I pilastri hanno larghezza 1 e l'arco frontale luce 5. Unisci i quattro punti a PP: sono le tracce a terra degli spigoli perpendicolari al quadro; 4–PP è la base della faccia esterna delle arcate laterali, 3–PP quella della faccia interna.");
 [[X0,"1"],[X1,"2"],[X2,"3"],[X3,"4"]].forEach(([x,s])=>TX(s,M(x,-.75)));
-const cx=(X1+X2)/2;
-L(M(X1,ZS),M(X2,ZS),"ca cons");L(M(X1,ZS+RF),M(X2,ZS+RF),"ca cons");L(M(X1,ZS),M(X1,ZS+RF),"ca cons");L(M(X2,ZS),M(X2,ZS+RF),"ca cons");
-L(M(cx,ZS),M(cx,ZS+RF),"ca cons");L(M(cx,ZS),M(X1,ZS+RF),"ca cons");L(M(cx,ZS),M(X2,ZS+RF),"ca cons");DOT(M(cx,ZS),"dot cons");
-PL([M(X1,0),M(X0,0),M(X0,ZTOP),M(X3,ZTOP),M(X3,0),M(X2,0)],"fin");
-L(M(X1,0),M(X1,ZS),"fin");L(M(X2,0),M(X2,ZS),"fin");
-PL(arcPts(t=>M(cx-RF*Math.cos(t),ZS+RF*Math.sin(t))),"fin");
-
-// 3
-step("Rette di profondità verso PP","Unisci a PP i punti 1, 2, 3 e 4. Sono le tracce a terra degli spigoli perpendicolari al quadro: in particolare 4–PP è la base della faccia esterna delle arcate laterali e 3–PP quella della faccia interna.");
 [X0,X1,X2,X3].forEach(x=>L(M(x,0),PP,"cpp cons"));
 
+// 3
+step("Profondità con il punto di distanza","Riporta sulla LT, a destra di 4, le profondità lette in pianta con le rette a 45°: 5–6 è lo spessore dell'arcata frontale, 7–8, 9–10 e 11–12 sono le colonne. Unisci ciascun punto a PD: dove queste rette incontrano 4–PP trovi in prospettiva le basi delle colonne. Dalle intersezioni traccia le parallele alla LT.");
+DEPTHS.forEach((p,i)=>{L(M(LTX(p),0),PD,"cpd cons");TX(String(5+i),M(LTX(p),-.75));DOT(P(X3,p,0),"dot cons",.09)});
+[0,T].forEach(p=>L(P(X0,p,0),P(X3,p,0),"ch cons"));
+DEPTHS.slice(2).forEach(p=>L(P(X2,p,0),P(X3,p,0),"ch cons"));
+
 // 4
-step("Profondità con il punto di distanza","Riporta sulla LT, a destra di 4, le profondità dei pilastri lette in pianta (ribaltate a 45°): punti 5–13. Unisci ciascun punto a PD. Dove queste rette incontrano 4–PP trovi in prospettiva gli spigoli a terra dei pilastri.");
-DEPTHS.forEach((p,i)=>{L(M(X3+p,0),PD,"cpd cons");TX(String(5+i),M(X3+p,-.75))});
-DEPTHS.forEach(p=>DOT(P(X3,p,0),"dot cons",.09));
+step("Arcata frontale","Dal punto 1 innalza la perpendicolare e riportaci in vera grandezza le altezze del prospetto: imposta, chiave, trabeazione. Uniscile a PP: dove incontrano la verticale della faccia frontale ottieni le altezze in prospettiva. L'arcata frontale è parallela al quadro, quindi non subisce deformazioni: è solo rimpicciolita. Inscrivi l'arco in un rettangolo, trova il centro sull'imposta e traccialo con il compasso.");
+L(M(X0,0),M(X0,ZTOP),"ch cons");
+[[ZS,"imposta"],[ZS+RF,"chiave"],[ZTOP,"trabeazione"]].forEach(([z,s])=>{L(M(X0,z),PP,"ch cons");DOT(M(X0,z),"dot cons",.08)});
+[X0,X1,X2,X3].forEach(x=>L(P(x,0,0),P(x,0,ZTOP),"ch cons"));
+const cx=(X1+X2)/2;
+[[[X1,ZS],[X2,ZS]],[[X1,ZS+RF],[X2,ZS+RF]],[[cx,ZS],[cx,ZS+RF]],[[cx,ZS],[X1,ZS+RF]],[[cx,ZS],[X2,ZS+RF]]].forEach(([a,b])=>L(P(a[0],0,a[1]),P(b[0],0,b[1]),"ca cons"));
+DOT(P(cx,0,ZS),"dot cons");
+PL([P(X1,0,0),P(X0,0,0),P(X0,0,ZTOP),P(X3,0,ZTOP),P(X3,0,0),P(X2,0,0)],"fin");
+L(P(X1,0,0),P(X1,0,ZS),"fin");L(P(X2,0,0),P(X2,0,ZS),"fin");
+PL(arcPts(t=>P(cx-RF*Math.cos(t),0,ZS+RF*Math.sin(t))),"fin");
 
 // 5
-step("Pilastri e piano interno","Dalle intersezioni su 4–PP traccia le parallele alla LT fino a 3–PP: ottieni gli stessi spigoli sul piano interno, che dà lo spessore delle arcate. Da tutti i punti innalza le verticali dei pilastri.");
-DEPTHS.forEach(p=>{L(P(X3,p,0),P(X2,p,0),"ch cons");L(P(X3,p,0),P(X3,p,ZTOP),"ch cons");L(P(X2,p,0),P(X2,p,ZTOP),"ch cons")});
-L(P(X1,T,0),P(X3,T,0),"ch cons");
+step("Colonne e piano interno","Dai punti trovati su 4–PP e su 3–PP innalza le verticali delle colonne fino alla trabeazione: il piano esterno (4) e quello interno (3) danno lo spessore delle arcate laterali.");
+DEPTHS.forEach(p=>{L(P(X3,p,0),P(X3,p,ZTOP),"ch cons");if(p>=T)L(P(X2,p,0),P(X2,p,ZTOP),"ch cons")});
 
 // 6
-step("Linee di misura delle altezze","Le altezze si misurano in vera grandezza solo sul quadro. Gli archi laterali hanno la stessa luce e la stessa imposta dell'arco frontale, quindi anche la chiave è alla stessa altezza. Lo spigolo verticale per 4 (e la verticale per 3) fa da linea di misura: riporta l'imposta degli archi, la chiave e la sommità della trabeazione e uniscile a PP.");
-[[ZS,"imposta"],[ZS+RL,"chiave"],[ZTOP,"trabeazione"]].forEach(([z,s])=>{L(M(X3,z),PP,"ch cons");L(M(X2,z),PP,"ch cons");TX(s,M(X0-.25,z+.12),"lbl cons","end")});
+step("Altezze sul fianco","Gli archi laterali hanno la stessa luce e la stessa imposta dell'arco frontale, quindi la chiave è alla stessa altezza. La verticale per 4 è la traccia del piano laterale sul quadro: riportaci imposta, chiave e trabeazione e uniscile a PP. Fai lo stesso sulla verticale per 3 per il piano interno.");
+[[ZS,"imposta"],[ZS+RL,"chiave"],[ZTOP,"trabeazione"]].forEach(([z,s])=>{L(M(X3,0),M(X3,ZTOP),"ch cons");L(M(X3,z),PP,"ch cons");L(M(X2,z),PP,"ch cons")});
 
 // 7
-step("Mezzo quadrato ausiliario","A lato disegna in vera forma l'arco laterale, che ha la stessa luce dell'arco frontale, inscritto in un mezzo quadrato e traccia le diagonali dei due quadrati. La diagonale taglia l'arco nel punto a 45°: la sua altezza (h 45°) va riportata orizzontalmente sulla linea di misura e da lì mandata a PP.");
-const ax0=-12.2,ax1=ax0+2*RL,acx=(ax0+ax1)/2;
+step("Mezzo quadrato ausiliario","A lato disegna in vera forma l'arco inscritto in un mezzo quadrato (due quadrati affiancati) e tracciane le diagonali. Ogni diagonale taglia l'arco nel punto a 45°: riporta questa altezza (h 45°) orizzontalmente sulla linea di misura per 1, poi sulle verticali per 3 e 4, e mandala a PP.");
+const ax0=XPD-7.5,ax1=ax0+2*RL,acx=(ax0+ax1)/2;
 PL([M(ax0,ZS),M(ax1,ZS),M(ax1,ZS+RL),M(ax0,ZS+RL)],"ca cons",true);
 L(M(acx,ZS),M(acx,ZS+RL),"ca cons");L(M(acx,ZS),M(ax0,ZS+RL),"ca cons");L(M(acx,ZS),M(ax1,ZS+RL),"ca cons");
 PL(arcPts(t=>M(acx-RL*Math.cos(t),ZS+RL*Math.sin(t))),"ca cons");
 [-1,1].forEach(s=>DOT(M(acx+s*K*RL,ZS+K*RL),"dot cons"));
 [ZS,ZS+K*RL,ZS+RL].forEach(z=>L(M(ax1,z),M(X0,z),"ca cons"));
 L(M(X3,ZS+K*RL),PP,"ch cons");L(M(X2,ZS+K*RL),PP,"ch cons");
-TX("h 45°",M(X0-.25,ZS+K*RL+.12),"lbl cons","end");
+[[ZS,"imposta"],[ZS+K*RL,"h 45°"],[ZS+RL,"chiave"]].forEach(([z,s])=>TX(s,M(ax0-.25,z-.12),"lbl cons","end"));
 
 // 8
-step("Punti medi delle campate","Sulla LT individua il punto medio di ogni campata (m) e uniscilo a PD. Dall'intersezione con 4–PP innalza la verticale: sulla retta della chiave trovi il punto più alto di ogni arco.");
-CENTERS.forEach(c=>{L(M(X3+c,0),PD,"cpd cons");TX("m",M(X3+c,-.75),"lbl cons");DOT(P(X3,c,0),"dot cons",.09);
+step("Punti medi delle campate","Sulla LT individua il punto medio di ogni campata, tra 6 e 7, 8 e 9, 10 e 11 (m), e uniscilo a PD. Dall'intersezione con 4–PP innalza la verticale: sulla retta della chiave trovi il punto più alto di ogni arco.");
+CENTERS.forEach(c=>{L(M(LTX(c),0),PD,"cpd cons");TX("m",M(LTX(c),-.75),"lbl cons");DOT(P(X3,c,0),"dot cons",.09);
   L(P(X3,c,0),P(X3,c,ZS+RL),"ch cons");L(P(X3,c,0),P(X2,c,0),"ch cons");L(P(X2,c,0),P(X2,c,ZS+RL),"ch cons")});
 
 // 9
-step("Mezzi quadrati in prospettiva","Ogni arco laterale sta in un mezzo quadrato in prospettiva, chiuso dai piedritti, dall'imposta e dalla retta della chiave. Traccia le diagonali dei due quadrati: incrociandole con la retta h 45° ottieni i due punti intermedi. Con imposte e chiave sono cinque punti per arco.");
+step("Mezzi quadrati in prospettiva","Ogni arco laterale sta in un mezzo quadrato in prospettiva, chiuso dalle colonne, dall'imposta e dalla retta della chiave. Traccia le diagonali dei due quadrati: incrociandole con la retta h 45° ottieni i due punti intermedi. Con imposte e chiave sono cinque punti per arco.");
 [X3,X2].forEach(X=>CENTERS.forEach(c=>{const a=c-RL,b=c+RL,z=ZS;
-  L(P(X,c,z),P(X,a,z+RL),"ca cons");L(P(X,c,z),P(X,b,z+RL),"ca cons");
+  L(P(X,a,z+RL),P(X,b,z+RL),"ca cons");L(P(X,c,z),P(X,a,z+RL),"ca cons");L(P(X,c,z),P(X,b,z+RL),"ca cons");
   [[a,z],[c-K*RL,z+K*RL],[c,z+RL],[c+K*RL,z+K*RL],[b,z]].forEach(([p,zz])=>DOT(P(X,p,zz),"dot cons",.09))}));
 
 // 10
@@ -240,7 +245,7 @@ FILL([P(X0,0,ZTOP),P(X3,0,ZTOP),P(X3,PEND,ZTOP),P(X2,PEND,ZTOP),P(X2,T,ZTOP),P(X
 let side=[P(X3,0,0)];
 CENTERS.forEach(c=>{side.push(P(X3,c-RL,0));side=side.concat(arcPts(t=>P(X3,c-RL*Math.cos(t),ZS+RL*Math.sin(t))));side.push(P(X3,c+RL,0))});
 side.push(P(X3,PEND,0),P(X3,PEND,ZTOP),P(X3,0,ZTOP));FILL(side,"f-side");
-FILL([M(X0,0),M(X1,0),M(X1,ZS)].concat(arcPts(t=>M(cx-RF*Math.cos(t),ZS+RF*Math.sin(t))),[M(X2,0),M(X3,0),M(X3,ZTOP),M(X0,ZTOP)]),"f-front");
+FILL([P(X0,0,0),P(X1,0,0),P(X1,0,ZS)].concat(arcPts(t=>P(cx-RF*Math.cos(t),0,ZS+RF*Math.sin(t))),[P(X2,0,0),P(X3,0,0),P(X3,0,ZTOP),P(X0,0,ZTOP)]),"f-front");
 
 // ---------------- rendering ----------------
 const svg=document.getElementById("svg");
