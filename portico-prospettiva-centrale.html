@@ -195,28 +195,28 @@ step("Colonne e piano interno","Dai punti trovati su 4–PP e su 3–PP innalza 
 DEPTHS.forEach(p=>{L(P(X3,p,0),P(X3,p,ZTOP),"ch cons");if(p>=T)L(P(X2,p,0),P(X2,p,ZTOP),"ch cons")});
 
 // 6
-step("Altezze sul fianco","Gli archi laterali hanno la stessa luce e la stessa imposta dell'arco frontale, quindi la chiave è alla stessa altezza. La verticale per 4 è la traccia del piano laterale sul quadro: riportaci imposta, chiave e trabeazione e uniscile a PP. Fai lo stesso sulla verticale per 3 per il piano interno.");
-[[ZS,"imposta"],[ZS+RL,"chiave"],[ZTOP,"trabeazione"]].forEach(([z,s])=>{L(M(X3,0),M(X3,ZTOP),"ch cons");L(M(X3,z),PP,"ch cons");L(M(X2,z),PP,"ch cons")});
+step("Altezze sul fianco","Gli archi laterali hanno la stessa luce e la stessa imposta dell'arco frontale, quindi la chiave è alla stessa altezza. La verticale per 4 è la traccia del piano laterale sul quadro: riportaci imposta, chiave e trabeazione e uniscile a PP. Basta il piano esterno: gli archi del piano interno si ricaveranno da questi.");
+[[ZS,"imposta"],[ZS+RL,"chiave"],[ZTOP,"trabeazione"]].forEach(([z,s])=>{L(M(X3,0),M(X3,ZTOP),"ch cons");L(M(X3,z),PP,"ch cons")});
 
 // 7
-step("Mezzo quadrato ausiliario","A lato disegna in vera forma l'arco inscritto in un mezzo quadrato (due quadrati affiancati) e tracciane le diagonali. Ogni diagonale taglia l'arco nel punto a 45°: riporta questa altezza (h 45°) orizzontalmente sulla linea di misura per 1, poi sulle verticali per 3 e 4, e mandala a PP.");
+step("Mezzo quadrato ausiliario","A lato disegna in vera forma l'arco inscritto in un mezzo quadrato (due quadrati affiancati) e tracciane le diagonali. Ogni diagonale taglia l'arco nel punto a 45°: riporta questa altezza (h 45°) orizzontalmente sulla linea di misura per 1, poi sulla verticale per 4, e mandala a PP.");
 const ax0=XPD-7.5,ax1=ax0+2*RL,acx=(ax0+ax1)/2;
 PL([M(ax0,ZS),M(ax1,ZS),M(ax1,ZS+RL),M(ax0,ZS+RL)],"ca cons",true);
 L(M(acx,ZS),M(acx,ZS+RL),"ca cons");L(M(acx,ZS),M(ax0,ZS+RL),"ca cons");L(M(acx,ZS),M(ax1,ZS+RL),"ca cons");
 PL(arcPts(t=>M(acx-RL*Math.cos(t),ZS+RL*Math.sin(t))),"ca cons");
 [-1,1].forEach(s=>DOT(M(acx+s*K*RL,ZS+K*RL),"dot cons"));
 [ZS,ZS+K*RL,ZS+RL].forEach(z=>L(M(ax1,z),M(X0,z),"ca cons"));
-L(M(X3,ZS+K*RL),PP,"ch cons");L(M(X2,ZS+K*RL),PP,"ch cons");
+L(M(X3,ZS+K*RL),PP,"ch cons");
 [[ZS,"imposta"],[ZS+K*RL,"h 45°"],[ZS+RL,"chiave"]].forEach(([z,s])=>TX(s,M(ax0-.25,z-.12),"lbl cons","end"));
 
 // 8
 step("Punti medi delle campate","Sulla LT individua il punto medio di ogni campata, tra 6 e 7, 8 e 9, 10 e 11 (m), e uniscilo a PD. Dall'intersezione con 4–PP innalza la verticale: sulla retta della chiave trovi il punto più alto di ogni arco.");
 CENTERS.forEach(c=>{L(M(LTX(c),0),PD,"cpd cons");TX("m",M(LTX(c),-.75),"lbl cons");DOT(P(X3,c,0),"dot cons",.09);
-  L(P(X3,c,0),P(X3,c,ZS+RL),"ch cons");L(P(X3,c,0),P(X2,c,0),"ch cons");L(P(X2,c,0),P(X2,c,ZS+RL),"ch cons")});
+  L(P(X3,c,0),P(X3,c,ZS+RL),"ch cons")});
 
 // 9
-step("Mezzi quadrati in prospettiva","Ogni arco laterale sta in un mezzo quadrato in prospettiva, chiuso dalle colonne, dall'imposta e dalla retta della chiave. Traccia le diagonali dei due quadrati: incrociandole con la retta h 45° ottieni i due punti intermedi. Con imposte e chiave sono cinque punti per arco.");
-[X3,X2].forEach(X=>CENTERS.forEach(c=>{const a=c-RL,b=c+RL,z=ZS;
+step("Mezzi quadrati in prospettiva","Sul piano esterno ogni arco laterale sta in un mezzo quadrato in prospettiva, chiuso dalle colonne, dall'imposta e dalla retta della chiave. Traccia le diagonali dei due quadrati: incrociandole con la retta h 45° ottieni i due punti intermedi. Con imposte e chiave sono cinque punti per arco.");
+[X3].forEach(X=>CENTERS.forEach(c=>{const a=c-RL,b=c+RL,z=ZS;
   L(P(X,a,z+RL),P(X,b,z+RL),"ca cons");L(P(X,c,z),P(X,a,z+RL),"ca cons");L(P(X,c,z),P(X,b,z+RL),"ca cons");
   [[a,z],[c-K*RL,z+K*RL],[c,z+RL],[c+K*RL,z+K*RL],[b,z]].forEach(([p,zz])=>DOT(P(X,p,zz),"dot cons",.09))}));
 
@@ -226,7 +226,9 @@ CENTERS.forEach(c=>{ARCX(X3,c);SEG([X3,c-RL,0],[X3,c-RL,ZS]);SEG([X3,c+RL,0],[X3
 SEG([X3,0,0],[X3,T,0]);SEG([X3,0,ZTOP],[X3,PEND,ZTOP]);SEG([X3,PEND,0],[X3,PEND,ZTOP]);
 
 // 11
-step("Spessore sul piano posteriore","Ripeti gli archi sul piano interno (3–PP) e uniscili alle arcate esterne. Completa la faccia superiore della trabeazione e riporta l'arco frontale sulla sua faccia posteriore, alla profondità dello spessore. Restano continui solo i tratti che si vedono attraverso le aperture: la parte destra degli archi interni e i montanti in fondo alle campate. I montanti vicini, la parte sinistra degli archi interni e la metà destra dell'arco posteriore stanno dietro i pieni e si tratteggiano.");
+step("Spessore: archi posteriori ricavati da quelli anteriori","Non serve ripetere la costruzione sul piano interno. Ogni punto dell'arco posteriore sta alla stessa altezza e alla stessa profondità del corrispondente punto anteriore: da ciascuno dei cinque punti dell'arco esterno traccia la parallela alla LT. Abbassa il punto su 4–PP, porta la parallela alla LT fino a 3–PP e rialza la verticale: dove incontra la parallela trovi il punto posteriore. Unisci i punti con il curvilineo; completa la trabeazione e la faccia posteriore dell'arco frontale. Le parti nascoste dietro i pieni si tratteggiano.");
+CENTERS.forEach(c=>[[c-RL,ZS],[c-K*RL,ZS+K*RL],[c,ZS+RL],[c+K*RL,ZS+K*RL],[c+RL,ZS]].forEach(([p,z])=>{
+  L(P(X3,p,z),P(X2,p,z),"ca cons");L(P(X3,p,0),P(X3,p,z),"ch cons");L(P(X3,p,0),P(X2,p,0),"ch cons");L(P(X2,p,0),P(X2,p,z),"ch cons");DOT(P(X2,p,z),"dot cons",.09)}));
 CENTERS.forEach(c=>{ARCX(X2,c);SEG([X2,c-RL,0],[X2,c-RL,ZS]);SEG([X2,c+RL,0],[X2,c+RL,ZS]);SEG([X2,c+RL,0],[X2,c+RL+PIER,0]);
   SEG([X2,c-RL,0],[X3,c-RL,0]);SEG([X2,c+RL,0],[X3,c+RL,0])});
 SEG([X0,0,ZTOP],[X0,T,ZTOP]);SEG([X0,T,ZTOP],[X2,T,ZTOP]);SEG([X2,T,ZTOP],[X2,PEND,ZTOP]);SEG([X2,PEND,ZTOP],[X3,PEND,ZTOP]);
