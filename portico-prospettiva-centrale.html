@@ -62,7 +62,7 @@ ol li.cur{background:var(--fill-top);color:var(--ink);font-weight:500}
 .ch{stroke:var(--h);stroke-width:.03}
 .ca{stroke:var(--arc);stroke-width:.035}
 .fin{stroke:var(--ink);stroke-width:.075;stroke-linejoin:round}
-.hid{stroke:var(--ink);stroke-width:.04;stroke-dasharray:.25 .18}
+.hid{stroke:var(--ink-2);stroke-width:.035;stroke-dasharray:.09 .07}
 .dot{fill:var(--sheet);stroke:var(--arc);stroke-width:.04}
 .dot.ref{stroke:var(--frame);fill:var(--frame)}
 .lbl{font-family:var(--display);font-weight:600;font-size:.55px;fill:var(--ink-2)}
@@ -257,7 +257,7 @@ function make(e,state,delay){
   let n;
   if(e.k==="circle"){n=document.createElementNS(NS,"circle");n.setAttribute("cx",e.q[0]);n.setAttribute("cy",e.q[1]);n.setAttribute("r",e.r)}
   else if(e.k==="text"){n=document.createElementNS(NS,"text");n.setAttribute("x",e.q[0]);n.setAttribute("y",e.q[1]);n.setAttribute("text-anchor",e.anchor);n.textContent=e.s}
-  else{n=document.createElementNS(NS,"path");n.setAttribute("d",e.d);if(e.k==="path"){n.classList.add("ln");n.setAttribute("pathLength","1")}}
+  else{n=document.createElementNS(NS,"path");n.setAttribute("d",e.d);if(e.k==="path"){n.classList.add("ln");if(!e.c.includes("hid"))n.setAttribute("pathLength","1")}}
   e.c.split(" ").forEach(c=>c&&n.classList.add(c));
   if(e.k==="path"&&!e.c.includes("cons")&&!e.c.includes("fin")&&!e.c.includes("hid")&&!e.c.includes("ref"))n.classList.add("cons");
   if(e.k==="path"&&/cpp|cpd|ch|ca/.test(e.c))n.classList.add("cons");
