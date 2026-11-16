@@ -86,7 +86,7 @@ ol li.cur{background:var(--fill-top);color:var(--ink);font-weight:500}
     <div class="sub">Metodo dei punti di distanza · Disegno tecnico</div>
   </header>
 
-  <div class="board" id="board"><svg id="svg" viewBox="-13.6 -11.9 41 13.8" role="img" aria-label="Costruzione del portico in prospettiva centrale"></svg></div>
+  <div class="board" id="board"><svg id="svg" viewBox="-13.6 -11.9 44 13.8" role="img" aria-label="Costruzione del portico in prospettiva centrale"></svg></div>
 
   <div class="controls">
     <button id="prev" type="button" aria-label="Passaggio precedente">◀ Indietro</button>
@@ -116,7 +116,7 @@ ol li.cur{background:var(--fill-top);color:var(--ink);font-weight:500}
 <script>
 (()=>{
 const XPP=22,H=10,D=24,XPD=XPP-D;
-const X0=0,X1=1,X2=5,X3=6,T=1,ZS=3.5,ZTOP=6.5,RF=2,RL=1.5,PIER=1,K=Math.SQRT1_2;
+const X0=0,X1=1,X2=5,X3=6,T=1,ZS=3.5,ZTOP=6.5,RF=2,RL=RF,PIER=1,K=Math.SQRT1_2;
 const CENTERS=[0,1,2,3].map(i=>T+RL+i*(2*RL+PIER));
 const PEND=CENTERS[3]+RL+PIER;
 const DEPTHS=[T];CENTERS.forEach(c=>DEPTHS.push(c-RL,c+RL));DEPTHS.push(PEND);DEPTHS.splice(0,DEPTHS.length,...[...new Set(DEPTHS)].sort((a,b)=>a-b));
@@ -159,8 +159,8 @@ const FILL=(pts,c)=>cur.els.push({k:"fill",d:"M"+pts.map(q=>q.join(",")).join("L
 
 // 1
 step("Quadro, orizzonte e punti di fuga","Traccia la linea di terra LT e la linea d'orizzonte LO. Su LO fissa il punto principale PP, dove fuggono tutte le rette perpendicolari al quadro, e il punto di distanza PD, posto a sinistra di PP a una distanza d uguale alla distanza dell'osservatore dal quadro. Verso PD fuggono le rette orizzontali inclinate di 45°.");
-L(M(-13,0),M(26.5,0),"ref");L(M(-13,H),M(26.5,H),"ref");
-TX("LT",M(26.5,.3),"lbl big","end");TX("LO",M(26.5,H+.3),"lbl big","end");
+L(M(-13,0),M(29.8,0),"ref");L(M(-13,H),M(29.8,H),"ref");
+TX("LT",M(29.8,.3),"lbl big","end");TX("LO",M(29.8,H+.3),"lbl big","end");
 DOT(PP,"dot ref",.16);DOT(PD,"dot ref",.16);TX("PP",M(XPP,H+.45),"lbl big");TX("PD",M(XPD,H+.45),"lbl big");
 L(M(XPD,H+1.1),M(XPP,H+1.1),"ch");L(M(XPD,H+.85),M(XPD,H+1.35),"ch");L(M(XPP,H+.85),M(XPP,H+1.35),"ch");
 TX("d",M((XPD+XPP)/2,H+1.25),"lbl");
@@ -190,12 +190,12 @@ DEPTHS.forEach(p=>{L(P(X3,p,0),P(X2,p,0),"ch cons");L(P(X3,p,0),P(X3,p,ZTOP),"ch
 L(P(X1,T,0),P(X3,T,0),"ch cons");
 
 // 6
-step("Linee di misura delle altezze","Le altezze si misurano in vera grandezza solo sul quadro. Lo spigolo verticale per 4 (e la verticale per 3) fa da linea di misura: riporta l'imposta degli archi, la chiave e la sommità della trabeazione e uniscile a PP.");
+step("Linee di misura delle altezze","Le altezze si misurano in vera grandezza solo sul quadro. Gli archi laterali hanno la stessa luce e la stessa imposta dell'arco frontale, quindi anche la chiave è alla stessa altezza. Lo spigolo verticale per 4 (e la verticale per 3) fa da linea di misura: riporta l'imposta degli archi, la chiave e la sommità della trabeazione e uniscile a PP.");
 [[ZS,"imposta"],[ZS+RL,"chiave"],[ZTOP,"trabeazione"]].forEach(([z,s])=>{L(M(X3,z),PP,"ch cons");L(M(X2,z),PP,"ch cons");TX(s,M(X0-.25,z+.12),"lbl cons","end")});
 
 // 7
-step("Mezzo quadrato ausiliario","A lato disegna in vera forma la metà dell'arco laterale inscritta in un mezzo quadrato e traccia le diagonali dei due quadrati. La diagonale taglia l'arco nel punto a 45°: la sua altezza (h 45°) va riportata orizzontalmente sulla linea di misura e da lì mandata a PP.");
-const ax0=-11.2,ax1=ax0+2*RL,acx=(ax0+ax1)/2;
+step("Mezzo quadrato ausiliario","A lato disegna in vera forma l'arco laterale, che ha la stessa luce dell'arco frontale, inscritto in un mezzo quadrato e traccia le diagonali dei due quadrati. La diagonale taglia l'arco nel punto a 45°: la sua altezza (h 45°) va riportata orizzontalmente sulla linea di misura e da lì mandata a PP.");
+const ax0=-12.2,ax1=ax0+2*RL,acx=(ax0+ax1)/2;
 PL([M(ax0,ZS),M(ax1,ZS),M(ax1,ZS+RL),M(ax0,ZS+RL)],"ca cons",true);
 L(M(acx,ZS),M(acx,ZS+RL),"ca cons");L(M(acx,ZS),M(ax0,ZS+RL),"ca cons");L(M(acx,ZS),M(ax1,ZS+RL),"ca cons");
 PL(arcPts(t=>M(acx-RL*Math.cos(t),ZS+RL*Math.sin(t))),"ca cons");
